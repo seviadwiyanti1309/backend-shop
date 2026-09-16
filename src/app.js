@@ -8,6 +8,7 @@ const productsRoutes = require("./routes/products.routes");
 const categoriesRoutes = require("./routes/categories.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const wishlistRoutes = require("./routes/wishlist.routes");
+const cartRoutes = require("./routes/cart.routes");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api/products", productsRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Shop API is running. Lihat dokumentasi di /api-docs" });
