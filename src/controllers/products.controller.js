@@ -1,40 +1,62 @@
-const { products } = require("../data/products.data");
+const { Product, Category } = require("../models");
 
-function getAllProducts(req, res) {
-  const { category } = req.query;
-  let result = products;
-  if (category) {
-    result = result.filter(
-      (p) => p.category.toLowerCase() === category.toLowerCase()
-    );
+async function getAllProducts(req, res) {
+  try {
+    const { category } = req.query;
+    const where = {};
+
+    if (category) {
+      const cat = await Category.findOne({ where: { name: category } });
+      if (!cat) return res.json([]);
+      where.categoryId = cat.id;
+    }
+
+    const products = await Product.findAll({ where, include: Category });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-  res.json(result);
 }
 
-function getProductById(req, res) {
-  const product = products.find((p) => p.id === req.params.id);
-  if (!product) return res.status(404).json({ message: "Produk tidak ditemukan" });
-  res.json(product);
+async function getProductById(req, res) {
+  try {
+    const product = await Product.findByPk(req.params.id, { include: Category });
+    if (!product) return res.status(404).json({ message: "Produk tidak ditemukan" });
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 }
 
-function createProduct(req, res) {
-  const newProduct = { id: "p" + (products.length + 1), ...req.body };
-  products.push(newProduct);
-  res.status(201).json(newProduct);
+async function createProduct(req, res) {
+  try {
+    const newProduct = await Product.create(req.body);
+    res.status(201).json(newProduct);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 }
 
-function updateProduct(req, res) {
-  const index = products.findIndex((p) => p.id === req.params.id);
-  if (index === -1) return res.status(404).json({ message: "Produk tidak ditemukan" });
-  products[index] = { ...products[index], ...req.body };
-  res.json(products[index]);
+async function updateProduct(req, res) {
+  try {
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ message: "Produk tidak ditemukan" });
+    await product.update(req.body);
+    res.json(product);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 }
 
-function deleteProduct(req, res) {
-  const index = products.findIndex((p) => p.id === req.params.id);
-  if (index === -1) return res.status(404).json({ message: "Produk tidak ditemukan" });
-  products.splice(index, 1);
-  res.status(204).send();
+async function deleteProduct(req, res) {
+  try {
+    const product = await Product.findByPk(req.params.id);
+    if (!product) return res.status(404).json({ message: "Produk tidak ditemukan" });
+    await product.destroy();
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 }
 
 module.exports = {

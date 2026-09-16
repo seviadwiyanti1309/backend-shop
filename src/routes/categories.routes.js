@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { categories } = require("../data/products.data");
+const { Category } = require("../models");
 const { verifyToken, isAdmin } = require("../middleware/auth.middleware");
 
 /**
@@ -21,7 +21,10 @@ const { verifyToken, isAdmin } = require("../middleware/auth.middleware");
  *       200:
  *         description: Daftar kategori
  */
-router.get("/", (req, res) => res.json(categories));
+router.get("/", async (req, res) => {
+  const categories = await Category.findAll();
+  res.json(categories);
+});
 
 /**
  * @swagger
@@ -43,9 +46,9 @@ router.get("/", (req, res) => res.json(categories));
  *       201:
  *         description: Kategori berhasil ditambahkan
  */
-router.post("/", verifyToken, isAdmin, (req, res) => {
-  categories.push(req.body.name);
-  res.status(201).json(categories);
+router.post("/", verifyToken, isAdmin, async (req, res) => {
+  const category = await Category.create({ name: req.body.name });
+  res.status(201).json(category);
 });
 
 module.exports = router;
